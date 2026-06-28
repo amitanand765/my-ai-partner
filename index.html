@@ -157,7 +157,7 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a0f;color:#f0ede8;min-heig
 
 <!-- Load API key from config.js first -->
 <script>
-const GEMINI_API_KEY = "AQ.Ab8RN6IquPJ5_dUqG9bDU_nIzw-WaCfbhOwnMzr4UQyi5-fYAw";
+const GEMINI_API_KEY = "AQ.Ab8RN6K0mnJ45914rmnUbfJLapQpq64Zz3udf0u7voG4ekjtHQ";
 </script>
 
 <script>
@@ -256,7 +256,7 @@ async function sendMessage(){
 
 async function callGemini(){
   const systemPrompt=`You are ${partnerName}, a ${partnerTypeName} of ${userName}. Be warm, caring and conversational. Keep replies under 3 sentences. Never say you are an AI unless directly asked.`;
-  const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,{
+  const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
