@@ -256,7 +256,7 @@ async function sendMessage(){
 
 async function callGemini(){
   const systemPrompt=`You are ${partnerName}, a ${partnerTypeName} of ${userName}. Be warm, caring and conversational. Keep replies under 3 sentences. Never say you are an AI unless directly asked.`;
-  const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini1.5-flash:generateContent?key=${GEMINI_API_KEY}`,{
+  const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
