@@ -155,12 +155,9 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a0f;color:#f0ede8;min-heig
   </div>
 </div>
 
-<!-- Load API key from config.js first -->
 <script>
-const GEMINI_API_KEY = "AQ.Ab8RN6K0mnJ45914rmnUbfJLapQpq64Zz3udf0u7voG4ekjtHQ";
-</script>
+const GEMINI_API_KEY = "AQ.Ab8RN6LJO620r337suh-ysy95n44qKAuuEPviQmVeC4ndP2wLQ";
 
-<script>
 let userName = "";
 let partnerType = "";
 let partnerEmoji = "";
@@ -249,16 +246,19 @@ async function sendMessage(){
     chatHistory.push({role:"model",parts:[{text:reply}]});
   }catch(err){
     showTyping(false);
-    addMessage("ERROR: " + err.message,'ai');
+    addMessage("ERROR: "+err.message,'ai');
     console.error(err);
   }
 }
 
 async function callGemini(){
   const systemPrompt=`You are ${partnerName}, a ${partnerTypeName} of ${userName}. Be warm, caring and conversational. Keep replies under 3 sentences. Never say you are an AI unless directly asked.`;
-  const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,{
+  const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent`,{
     method:'POST',
-    headers:{'Content-Type':'application/json'},
+    headers:{
+      'Content-Type':'application/json',
+      'x-goog-api-key':GEMINI_API_KEY
+    },
     body:JSON.stringify({
       system_instruction:{parts:[{text:systemPrompt}]},
       contents:chatHistory,
