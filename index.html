@@ -249,7 +249,7 @@ async function sendMessage(){
     chatHistory.push({role:"model",parts:[{text:reply}]});
   }catch(err){
     showTyping(false);
-    addMessage("Sorry, connection issue 😔 Try again!",'ai');
+    addMessage("ERROR: " + err.message,'ai');
     console.error(err);
   }
 }
