@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>My AI Partner</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#c084fc">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Segoe UI',sans-serif;background:#0a0a0f;color:#f0ede8;min-height:100vh;display:flex;flex-direction:column}
@@ -48,8 +50,20 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a0f;color:#f0ede8;min-heig
 .send-btn{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#c084fc,#818cf8);border:none;color:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .btn-primary{background:linear-gradient(135deg,#c084fc,#818cf8);color:white;border:none;border-radius:14px;padding:16px 32px;font-size:16px;cursor:pointer;width:100%;font-family:inherit}
 .btn-secondary{background:transparent;color:#888;border:1px solid #1e1e2e;border-radius:14px;padding:14px 32px;font-size:15px;cursor:pointer;width:100%;font-family:inherit;margin-top:10px}
+.btn-danger{background:transparent;color:#ff4757;border:1px solid #ff475740;border-radius:14px;padding:14px 32px;font-size:15px;cursor:pointer;width:100%;font-family:inherit;margin-top:10px}
 .text-input{background:#13131e;border:1px solid #1e1e2e;border-radius:14px;padding:16px 18px;color:#f0ede8;font-size:16px;width:100%;outline:none;font-family:inherit;margin-bottom:24px}
 .text-input:focus{border-color:#c084fc55}
+#settingsBtn{margin-left:auto;background:none;border:none;color:#888;font-size:20px;cursor:pointer;padding:4px}
+#settings{justify-content:flex-start;background:#0a0a0f}
+.settings-header{font-size:22px;font-weight:300;margin-bottom:8px}
+.settings-sub{color:#888;font-size:13px;margin-bottom:32px}
+.settings-item{background:#13131e;border:1px solid #1e1e2e;border-radius:12px;padding:16px;margin-bottom:10px}
+.settings-label{font-size:11px;color:#666;font-family:monospace;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px}
+.settings-value{font-size:16px;color:#f0ede8}
+.memory-box{background:#13131e;border:1px solid #1e1e2e;border-radius:12px;padding:16px;margin-bottom:20px}
+.memory-label{font-size:11px;color:#c084fc;font-family:monospace;letter-spacing:2px;margin-bottom:8px}
+.memory-count{font-size:28px;color:#f0ede8;font-weight:300}
+.memory-sub{font-size:12px;color:#666;margin-top:2px}
 </style>
 </head>
 <body>
@@ -64,7 +78,6 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a0f;color:#f0ede8;min-heig
 
 <!-- ONBOARDING -->
 <div class="screen" id="onboarding">
-
   <div class="onboard-step active" id="step1">
     <div class="progress-bar">
       <div class="progress-dot active"></div>
@@ -131,7 +144,6 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a0f;color:#f0ede8;min-heig
     <button class="btn-primary" onclick="startChat()">Meet them →</button>
     <button class="btn-secondary" onclick="goToStep('step2')">← Back</button>
   </div>
-
 </div>
 
 <!-- CHAT -->
@@ -142,6 +154,7 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a0f;color:#f0ede8;min-heig
       <div class="name" id="chatName">Partner</div>
       <div class="status">● Online</div>
     </div>
+    <button id="settingsBtn" onclick="showScreen('settings')">⚙️</button>
   </div>
   <div class="messages" id="messages">
     <div class="typing" id="typing">
@@ -155,8 +168,34 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a0f;color:#f0ede8;min-heig
   </div>
 </div>
 
+<!-- SETTINGS -->
+<div class="screen" id="settings">
+  <p class="settings-header">Settings ⚙️</p>
+  <p class="settings-sub">Your profile & memory</p>
+  <div class="memory-box">
+    <div class="memory-label">MESSAGES REMEMBERED</div>
+    <div class="memory-count" id="memoryCount">0</div>
+    <div class="memory-sub">stored on this device</div>
+  </div>
+  <div class="settings-item">
+    <div class="settings-label">YOUR NAME</div>
+    <div class="settings-value" id="settingName">—</div>
+  </div>
+  <div class="settings-item">
+    <div class="settings-label">PARTNER TYPE</div>
+    <div class="settings-value" id="settingType">—</div>
+  </div>
+  <div class="settings-item">
+    <div class="settings-label">PARTNER NAME</div>
+    <div class="settings-value" id="settingPartner">—</div>
+  </div>
+  <div class="spacer"></div>
+  <button class="btn-secondary" onclick="showScreen('chat')">← Back to Chat</button>
+  <button class="btn-danger" onclick="resetApp()">🗑️ Reset Everything</button>
+</div>
+
 <script>
-const GEMINI_API_KEY = "AQ.Ab8RN6LJO620r337suh-ysy95n44qKAuuEPviQmVeC4ndP2wLQ";
+const WORKER_URL = "https://ai-partner-proxy.amitanand-765.workers.dev";
 
 let userName = "";
 let partnerType = "";
@@ -165,9 +204,71 @@ let partnerTypeName = "";
 let partnerName = "";
 let chatHistory = [];
 
+function saveToMemory(){
+  localStorage.setItem('ap_userName', userName);
+  localStorage.setItem('ap_partnerType', partnerType);
+  localStorage.setItem('ap_partnerEmoji', partnerEmoji);
+  localStorage.setItem('ap_partnerTypeName', partnerTypeName);
+  localStorage.setItem('ap_partnerName', partnerName);
+  localStorage.setItem('ap_chatHistory', JSON.stringify(chatHistory.slice(-20)));
+}
+
+function loadFromMemory(){
+  userName = localStorage.getItem('ap_userName') || "";
+  partnerType = localStorage.getItem('ap_partnerType') || "";
+  partnerEmoji = localStorage.getItem('ap_partnerEmoji') || "";
+  partnerTypeName = localStorage.getItem('ap_partnerTypeName') || "";
+  partnerName = localStorage.getItem('ap_partnerName') || "";
+  const saved = localStorage.getItem('ap_chatHistory');
+  chatHistory = saved ? JSON.parse(saved) : [];
+}
+
+function resetApp(){
+  if(!confirm('Reset everything? This clears all memory and chat history.')) return;
+  localStorage.clear();
+  location.reload();
+}
+
+window.onload = function(){
+  loadFromMemory();
+  if(userName && partnerName && partnerType){
+    setupChatHeader();
+    showScreen('chat');
+    loadChatMessages();
+    setTimeout(()=>{
+      const greetings = [
+        `Welcome back ${userName}! 😊 I missed you! How are you doing?`,
+        `${userName}! So glad you're back 💕 How has your day been?`,
+        `Hey ${userName}! I was thinking about you 😊 What's on your mind?`,
+        `${userName} you're back! ❤️ Tell me everything — how are you?`
+      ];
+      addMessage(greetings[Math.floor(Math.random()*greetings.length)], 'ai');
+    }, 600);
+  } else {
+    showScreen('welcome');
+  }
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('/my-ai-partner/sw.js');
+  }
+}
+
+function setupChatHeader(){
+  document.getElementById('chatAvatar').textContent = partnerEmoji;
+  document.getElementById('chatName').textContent = partnerName;
+}
+
+function loadChatMessages(){
+  const last10 = chatHistory.slice(-10);
+  last10.forEach(msg => {
+    const sender = msg.role === 'user' ? 'user' : 'ai';
+    addMessage(msg.parts[0].text, sender);
+  });
+}
+
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  if(id === 'settings') updateSettings();
 }
 
 function goToStep(id){
@@ -199,8 +300,8 @@ function startChat(){
   const pName=document.getElementById('partnerName').value.trim();
   if(!pName){alert('Please give them a name 💕');return;}
   partnerName=pName;
-  document.getElementById('chatAvatar').textContent=partnerEmoji;
-  document.getElementById('chatName').textContent=partnerName;
+  setupChatHeader();
+  saveToMemory();
   showScreen('chat');
   setTimeout(()=>{
     const msgs={
@@ -214,7 +315,14 @@ function startChat(){
   },800);
 }
 
-function addMessage(text,sender){
+function updateSettings(){
+  document.getElementById('settingName').textContent = userName || '—';
+  document.getElementById('settingType').textContent = partnerTypeName ? partnerEmoji+' '+partnerTypeName : '—';
+  document.getElementById('settingPartner').textContent = partnerName || '—';
+  document.getElementById('memoryCount').textContent = chatHistory.length;
+}
+
+function addMessage(text, sender){
   const messagesDiv=document.getElementById('messages');
   const typing=document.getElementById('typing');
   const msg=document.createElement('div');
@@ -244,6 +352,7 @@ async function sendMessage(){
     showTyping(false);
     addMessage(reply,'ai');
     chatHistory.push({role:"model",parts:[{text:reply}]});
+    saveToMemory();
   }catch(err){
     showTyping(false);
     addMessage("ERROR: "+err.message,'ai');
@@ -253,11 +362,10 @@ async function sendMessage(){
 
 async function callGemini(){
   const systemPrompt=`You are ${partnerName}, a ${partnerTypeName} of ${userName}. Be warm, caring and conversational. Keep replies under 3 sentences. Never say you are an AI unless directly asked.`;
-  const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent`,{
+  const res=await fetch(WORKER_URL,{
     method:'POST',
     headers:{
-      'Content-Type':'application/json',
-      'x-goog-api-key':GEMINI_API_KEY
+      'Content-Type':'application/json'
     },
     body:JSON.stringify({
       system_instruction:{parts:[{text:systemPrompt}]},
